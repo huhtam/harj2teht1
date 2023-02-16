@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            display: flex;
+            }
+        th, td {
+            border: 1px solid;
+            padding: 0.25em;
+        }
+        #bodydiv {
+            padding: 2em;
+            align-items: center;
+            background-color: aliceblue;
+        }
+        table {
+            text-align: center;
+            border-collapse: collapse;
+            background-color: powderblue;
+            font-family:Verdana, Geneva, Tahoma, sans-serif;
+            font-size: small;
+        }
+        h3 {
+            text-align: center;
+        }
+
+        #selectdiv {
+            padding: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div id="bodydiv">
+        <h3>Lähtevät junat <span id="station"></span></h3>
+        <div id="selectdiv">
+            <select id="station_id" onchange="myFunction()">
+                <form>
+                <option disabled selected value> -- valitse asema -- </option>
+                <option value="SK">Seinäjoki</option>
+                <option value="VS">Vaasa</option>
+            </select>
+        </div>
+            </form>
+        <div id="tablediv">
+            <table>
+                <thead>
+                    
+                    <tr>
+                        <th>Lähtevä</th>
+                        <th>Tyyppi</th>
+                        <th>Määränpää</th>
+                        <th>Kellonaika</th>
+                    </tr>
+                </thead>
+                <tbody id="data-output">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function myFunction() {
+        var e = document.getElementById("station_id");
+        var stationname = e.options[e.selectedIndex].text
+        console.log(e.options[e.selectedIndex].text)
+        document.getElementById('station').innerHTML = stationname;
+
+        fetch("https://rata.digitraffic.fi/api/v1/live-trains/station/" + e.value)
+        
+        .then(function(response){
+
+            return response.json();
+        })
+
+        .then(function(SJVS){
+            let placeholder = document.querySelector("#data-output");
+            let out = "";
+            for(let train of SJVS){
+                const dateObj =  new Date(train.timetableAcceptanceDate);
+                out += `
+                
+                <tr>
+                    <td> ${train.trainNumber} </td>
+                    <td> ${train.trainType} </td>
+                    <td> ${train.timeTableRows[0].stationShortCode} </td>
+                    <td> ${dateObj.getDay()}.${dateObj.getMonth()}.${dateObj.getFullYear()} ${dateObj.getHours()}:${(dateObj.getMinutes()<10?'0':'') + dateObj.getMinutes()} </td>
+                </tr>
+                
+                `;
+            }
+
+            placeholder.innerHTML = out;
+        })
+    }
+        </script> 
+</body>
+</html>
